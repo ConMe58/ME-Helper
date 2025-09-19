@@ -7,17 +7,19 @@
   <style>
     :root{
       --bg:#ffffff; --fg:#111; --muted:#666;
-      --card:#f3f4f6; --border:#e5e7eb;
+      --card:#f3f4f6; --border:#d0d5dd;
       --accent:#2563eb; --accent-contrast:#fff;
-      --selected:#dbeafe; --shadow:0 1px 2px rgba(0,0,0,.07),0 3px 6px rgba(0,0,0,.06);
-      --radius:14px;
+      --selected-bg:#eef4ff;
+      --shadow:0 1px 2px rgba(0,0,0,.05);
+      --radius:16px;
     }
     @media(prefers-color-scheme:dark){
       :root{
         --bg:#0b0e12; --fg:#e8eaed; --muted:#98a2b3;
-        --card:#12161c; --border:#1f2733;
+        --card:#12161c; --border:#2c3440;
         --accent:#60a5fa; --accent-contrast:#0b0e12;
-        --selected:#152133; --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35);
+        --selected-bg:#152133;
+        --shadow:0 2px 4px rgba(0,0,0,.5);
       }
     }
     body{
@@ -26,38 +28,43 @@
       background:var(--bg);color:var(--fg);
       display:flex;justify-content:center
     }
-    .wrap{width:min(1100px,94vw);margin:28px auto 80px}
-    header{margin-bottom:16px;font-weight:700;font-size:20px}
+    .wrap{width:min(1100px,94vw);margin:20px auto}
+    header{margin-bottom:12px;font-weight:700;font-size:20px}
     .output{
       background:var(--card);border:1px solid var(--border);
-      border-radius:var(--radius);padding:14px;
-      box-shadow:var(--shadow);margin-bottom:18px
+      border-radius:var(--radius);padding:12px;
+      box-shadow:var(--shadow);margin-bottom:14px;
+      min-height:60px;
     }
     .output div{margin:6px 0}
     .grid{
       display:grid;
       grid-template-columns:repeat(3,1fr);
-      gap:14px;
-      justify-items:stretch;
-      align-items:stretch;
+      gap:12px;
     }
     .tile{
       aspect-ratio:1/1;
-      border:1px solid var(--border);
+      border:2px solid var(--border);
       border-radius:var(--radius);
       background:var(--card);
       box-shadow:var(--shadow);
       display:flex;
       flex-direction:column;
       justify-content:space-between;
-      padding:10px;
-      transition:transform .08s ease;
+      padding:8px;
+      position:relative;
+      transition:border-color .2s, background .2s, box-shadow .3s;
     }
-    .tile:hover{transform:translateY(-2px)}
+    .tile.selected{
+      border-color:var(--accent);
+      background:var(--selected-bg);
+      box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent),
+                 var(--shadow);
+    }
     .tile-header{
       text-align:center;
       font-weight:700;
-      font-size:16px;
+      font-size:15px;
       flex:1;
       display:flex;
       align-items:center;
@@ -66,17 +73,18 @@
     }
     .tile-footer{
       display:flex;
-      justify-content:space-around;
+      justify-content:space-between;
       gap:6px;
     }
     .mini-btn{
       flex:1;
       border:1px solid var(--border);
       border-radius:8px;
-      padding:4px;
-      font-size:12px;
+      padding:3px;
+      font-size:11px;
       cursor:pointer;
       background:var(--card);
+      transition:background .2s;
     }
     .mini-btn.active{background:var(--accent);color:var(--accent-contrast)}
   </style>
@@ -107,62 +115,68 @@
     const state = {};
     tilesData.forEach(t => state[t.id] = {selected:false,importance:"normal"});
 
-    function render(){
-      grid.innerHTML="";
-      tilesData.forEach(t=>{
-        const tile=document.createElement("div");
-        tile.className="tile";
+    // Kacheln erzeugen
+    tilesData.forEach(t=>{
+      const tile=document.createElement("div");
+      tile.className="tile";
+      tile.dataset.id=t.id;
 
-        const head=document.createElement("div");
-        head.className="tile-header";
-        head.textContent=t.label;
-        head.onclick=()=>{
-          state[t.id].selected=!state[t.id].selected;
-          if(!state[t.id].selected){ state[t.id].importance="normal"; }
-          update();
-        };
+      const head=document.createElement("div");
+      head.className="tile-header";
+      head.textContent=t.label;
+      head.onclick=()=>{
+        state[t.id].selected=!state[t.id].selected;
+        if(!state[t.id].selected){ state[t.id].importance="normal"; }
+        update();
+      };
 
-        const foot=document.createElement("div");
-        foot.className="tile-footer";
+      const foot=document.createElement("div");
+      foot.className="tile-footer";
 
-        const btn1=document.createElement("button");
-        btn1.className="mini-btn"+(state[t.id].importance==="wichtig"?" active":"");
-        btn1.textContent="Wichtig";
-        btn1.onclick=(e)=>{
-          e.stopPropagation();
-          state[t.id].selected=true;
-          state[t.id].importance = (state[t.id].importance==="wichtig" ? "normal" : "wichtig");
-          update();
-        };
+      const btn1=document.createElement("button");
+      btn1.className="mini-btn";
+      btn1.textContent="Wichtig";
+      btn1.onclick=(e)=>{
+        e.stopPropagation();
+        state[t.id].selected=true;
+        state[t.id].importance = (state[t.id].importance==="wichtig" ? "normal" : "wichtig");
+        update();
+      };
 
-        const btn2=document.createElement("button");
-        btn2.className="mini-btn"+(state[t.id].importance==="sehr"?" active":"");
-        btn2.textContent="Sehr wichtig";
-        btn2.onclick=(e)=>{
-          e.stopPropagation();
-          state[t.id].selected=true;
-          state[t.id].importance = (state[t.id].importance==="sehr" ? "normal" : "sehr");
-          update();
-        };
+      const btn2=document.createElement("button");
+      btn2.className="mini-btn";
+      btn2.textContent="Sehr wichtig";
+      btn2.onclick=(e)=>{
+        e.stopPropagation();
+        state[t.id].selected=true;
+        state[t.id].importance = (state[t.id].importance==="sehr" ? "normal" : "sehr");
+        update();
+      };
 
-        foot.appendChild(btn1);
-        foot.appendChild(btn2);
+      foot.appendChild(btn1);
+      foot.appendChild(btn2);
 
-        tile.appendChild(head);
-        tile.appendChild(foot);
-        grid.appendChild(tile);
-      });
-      update();
-    }
+      tile.appendChild(head);
+      tile.appendChild(foot);
+      grid.appendChild(tile);
+    });
 
     function update(){
       output.innerHTML="";
       tilesData.forEach(t=>{
-        if(state[t.id].selected){
+        const {selected,importance}=state[t.id];
+        const tile=document.querySelector(`.tile[data-id="${t.id}"]`);
+        tile.classList.toggle("selected", selected);
+
+        const [btn1,btn2]=tile.querySelectorAll(".mini-btn");
+        btn1.classList.toggle("active", importance==="wichtig");
+        btn2.classList.toggle("active", importance==="sehr");
+
+        if(selected){
           const div=document.createElement("div");
-          if(state[t.id].importance==="wichtig"){
+          if(importance==="wichtig"){
             div.innerHTML="<b>"+t.sentence+"</b>";
-          } else if(state[t.id].importance==="sehr"){
+          } else if(importance==="sehr"){
             div.innerHTML="<b><u>"+t.sentence+"</u></b>";
           } else {
             div.textContent=t.sentence;
@@ -170,29 +184,7 @@
           output.appendChild(div);
         }
       });
-      // Buttons neu zeichnen
-      document.querySelectorAll(".mini-btn").forEach(btn=>{
-        btn.classList.remove("active");
-      });
-      tilesData.forEach(t=>{
-        const tile=document.querySelector(`.tile-header:contains('${t.label}')`);
-      });
-      // Komplettes Grid neu zeichnen
-      renderGridButtons();
     }
-
-    // Hilfsfunktion: Buttons-States aktualisieren
-    function renderGridButtons(){
-      const tiles=document.querySelectorAll(".tile");
-      tiles.forEach((tile,idx)=>{
-        const id=tilesData[idx].id;
-        const [btn1,btn2]=tile.querySelectorAll(".mini-btn");
-        btn1.classList.toggle("active", state[id].importance==="wichtig");
-        btn2.classList.toggle("active", state[id].importance==="sehr");
-      });
-    }
-
-    render();
   </script>
 </body>
 </html>

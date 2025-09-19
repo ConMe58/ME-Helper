@@ -32,8 +32,8 @@
       display:grid;
       grid-template-columns:repeat(3, 1fr);
       gap:12px;
-      max-width:650px;   /* Blockbreite */
-      margin:0 auto;     /* zentrieren */
+      max-width:650px;
+      margin:0 auto;
     }
     .tile{
       aspect-ratio:1/1;
@@ -82,59 +82,59 @@
   </div>
 
   <script>
-    const tilesData = [
-      {id:"pause",label:"Pause",sentence:"Gerade ist es zu viel, ich brauche eine Pause."},
-      {id:"trinken",label:"Trinken",sentence:"Ich habe Durst und muss was trinken."},
-      {id:"wc",label:"WC",sentence:"Ich muss auf Toilette."},
-      {id:"medikamente",label:"Medikamente",sentence:"Ich brauche meine Medikamente."},
-      {id:"lueften",label:"Lüften",sentence:"Bitte kurz durchlüften."},
-      {id:"zaehne",label:"Zähneputzen",sentence:"Ich will Zähne putzen."},
-      {id:"schmerzen",label:"Schmerzen",sentence:"Ich habe gerade starke Schmerzen."},
-      {id:"crash",label:"Crash",sentence:"Ich bin gerade in einem starken Crash."},
-      {id:"nicht",label:"Nicht sprechen",sentence:"Bitte jetzt nicht mit mir sprechen."}
-    ];
     const grid=document.getElementById("grid");
     const output=document.getElementById("output");
     const state={};
-    tilesData.forEach(t=>state[t.id]={selected:false,importance:"normal"});
 
-    tilesData.forEach(t=>{
-      const tile=document.createElement("div");
-      tile.className="tile"; tile.dataset.id=t.id;
+    async function loadTiles(){
+      const res = await fetch("tiles.json");
+      const tilesData = await res.json();
+      tilesData.forEach(t=>state[t.id]={selected:false,importance:"normal"});
+      buildTiles(tilesData);
+      update(tilesData);
+    }
 
-      const head=document.createElement("div");
-      head.className="tile-header"; head.textContent=t.label;
-      head.onclick=()=>{
-        state[t.id].selected=!state[t.id].selected;
-        if(!state[t.id].selected) state[t.id].importance="normal";
-        update();
-      };
+    function buildTiles(tilesData){
+      tilesData.forEach(t=>{
+        const tile=document.createElement("div");
+        tile.className="tile"; tile.dataset.id=t.id;
 
-      const foot=document.createElement("div");
-      foot.className="tile-footer";
-      const btn1=document.createElement("button");
-      btn1.className="mini-btn"; btn1.textContent="Wichtig";
-      btn1.onclick=e=>{
-        e.stopPropagation();
-        state[t.id].selected=true;
-        state[t.id].importance=(state[t.id].importance==="wichtig"?"normal":"wichtig");
-        update();
-      };
-      const btn2=document.createElement("button");
-      btn2.className="mini-btn"; btn2.textContent="Sehr wichtig";
-      btn2.onclick=e=>{
-        e.stopPropagation();
-        state[t.id].selected=true;
-        state[t.id].importance=(state[t.id].importance==="sehr"?"normal":"sehr");
-        update();
-      };
+        const head=document.createElement("div");
+        head.className="tile-header"; head.textContent=t.label;
+        head.onclick=()=>{
+          state[t.id].selected=!state[t.id].selected;
+          if(!state[t.id].selected) state[t.id].importance="normal";
+          update(tilesData);
+        };
 
-      foot.append(btn1,btn2);
-      tile.append(head,foot);
-      grid.append(tile);
-    });
+        const foot=document.createElement("div");
+        foot.className="tile-footer";
 
-    function update(){
+        const btn1=document.createElement("button");
+        btn1.className="mini-btn"; btn1.textContent="Wichtig";
+        btn1.onclick=e=>{
+          e.stopPropagation();
+          state[t.id].selected=true;
+          state[t.id].importance=(state[t.id].importance==="wichtig"?"normal":"wichtig");
+          update(tilesData);
+        };
+
+        const btn2=document.createElement("button");
+        btn2.className="mini-btn"; btn2.textContent="Sehr wichtig";
+        btn2.onclick=e=>{
+          e.stopPropagation();
+          state[t.id].selected=true;
+          state[t.id].importance=(state[t.id].importance==="sehr"?"normal":"sehr");
+          update(tilesData);
+        };
+
+        foot.append(btn1,btn2);
+        tile.append(head,foot);
+        grid.append(tile);
+      });
+    }
+
+    function update(tilesData){
       output.innerHTML="";
       tilesData.forEach(t=>{
         const {selected,importance}=state[t.id];
@@ -152,7 +152,8 @@
         }
       });
     }
-    update();
+
+    loadTiles();
   </script>
 </body>
 </html>

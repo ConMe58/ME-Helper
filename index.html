@@ -28,23 +28,24 @@
       background:var(--bg);color:var(--fg);
       display:flex;justify-content:center
     }
-    .wrap{width:100%;max-width:1100px;margin:20px auto;text-align:center}
+    .wrap{width:100%;max-width:800px;margin:20px auto;text-align:center}
     header{margin-bottom:12px;font-weight:700;font-size:20px}
     .output{
       background:var(--card);border:1px solid var(--border);
       border-radius:var(--radius);padding:12px;
       box-shadow:var(--shadow);margin:0 auto 18px auto;
-      min-height:60px;max-width:800px;text-align:left;
+      min-height:60px;text-align:left;
     }
     .output div{margin:6px 0}
     .grid{
       display:grid;
-      grid-template-columns:repeat(3,1fr);
+      grid-template-columns:repeat(3, 1fr); /* immer 3 Spalten */
       gap:12px;
-      justify-content:center; /* Grid mittig */
-      justify-items:center;   /* einzelne Tiles mittig */
+      justify-items:center; /* Kacheln innerhalb der Spalte zentrieren */
     }
     .tile{
+      width:100%;
+      max-width:200px; /* alle gleich breit */
       aspect-ratio:1/1;
       border:2px solid var(--border);
       border-radius:var(--radius);
@@ -56,8 +57,6 @@
       padding:8px;
       position:relative;
       transition:border-color .2s, background .2s, box-shadow .3s;
-      max-width:200px; /* damit die Kacheln nicht zu groß werden */
-      width:100%;
     }
     .tile.selected{
       border-color:var(--accent);

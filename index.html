@@ -87,7 +87,7 @@
     const state={};
 
     async function loadTiles(){
-      const res = await fetch("tiles.json");
+      const res = await fetch("tiles.js");
       const tilesData = await res.json();
       tilesData.forEach(t=>state[t.id]={selected:false,importance:"normal"});
       buildTiles(tilesData);

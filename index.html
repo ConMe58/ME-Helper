@@ -5,65 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kachel-Auswahl</title>
   <style>
-    :root{
-      --bg:#ffffff; --fg:#111; --muted:#666;
-      --card:#f3f4f6; --border:#d0d5dd;
-      --accent:#2563eb; --accent-contrast:#fff;
-      --selected-bg:#eef4ff;
-      --shadow:0 1px 2px rgba(0,0,0,.05);
-      --radius:16px;
-    }
-    @media(prefers-color-scheme:dark){
-      :root{
-        --bg:#0b0e12; --fg:#e8eaed; --muted:#98a2b3;
-        --card:#12161c; --border:#2c3440;
-        --accent:#60a5fa; --accent-contrast:#0b0e12;
-        --selected-bg:#152133;
-        --shadow:0 2px 4px rgba(0,0,0,.5);
-      }
-    }
     body{
       margin:0;
-      font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
-      background:var(--bg);color:var(--fg);
-      display:flex;justify-content:center
+      font-family:sans-serif;
+      background:#0b0e12;
+      color:#e8eaed;
+      display:flex;
+      justify-content:center;
     }
-    .wrap{width:100%;max-width:800px;margin:20px auto;text-align:center}
-    header{margin-bottom:12px;font-weight:700;font-size:20px}
+    .wrap{
+      width:100%;
+      max-width:700px;
+      margin:20px auto;
+      text-align:center;
+    }
     .output{
-      background:var(--card);border:1px solid var(--border);
-      border-radius:var(--radius);padding:12px;
-      box-shadow:var(--shadow);margin:0 auto 18px auto;
-      min-height:60px;text-align:left;
+      background:#12161c;
+      border:1px solid #2c3440;
+      border-radius:14px;
+      padding:12px;
+      min-height:60px;
+      text-align:left;
+      margin-bottom:18px;
     }
-    .output div{margin:6px 0}
     .grid{
       display:grid;
       grid-template-columns:repeat(3, 1fr);
       gap:12px;
-      max-width:650px;   /* Gesamtbreite des Blocks */
-      margin:0 auto;     /* Block zentrieren */
     }
     .tile{
       aspect-ratio:1/1;
-      width:100%;
-      max-width:200px;   /* einzelne Kachelbegrenzung */
-      border:2px solid var(--border);
-      border-radius:var(--radius);
-      background:var(--card);
-      box-shadow:var(--shadow);
+      border:2px solid #2c3440;
+      border-radius:14px;
+      background:#12161c;
       display:flex;
       flex-direction:column;
       justify-content:space-between;
       padding:8px;
-      position:relative;
-      transition:border-color .2s, background .2s, box-shadow .3s;
+      transition:border .2s, background .2s;
     }
     .tile.selected{
-      border-color:var(--accent);
-      background:var(--selected-bg);
-      box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent),
-                 var(--shadow);
+      border-color:#60a5fa;
+      background:#152133;
     }
     .tile-header{
       text-align:center;
@@ -75,29 +58,25 @@
       justify-content:center;
       cursor:pointer;
     }
-    .tile-footer{
-      display:flex;
-      justify-content:space-between;
-      gap:6px;
-    }
+    .tile-footer{display:flex;gap:6px}
     .mini-btn{
       flex:1;
-      border:1px solid var(--border);
+      border:1px solid #2c3440;
       border-radius:8px;
       padding:3px;
       font-size:11px;
       cursor:pointer;
-      background:var(--card);
-      transition:background .2s;
+      background:#12161c;
+      color:#e8eaed;
     }
-    .mini-btn.active{background:var(--accent);color:var(--accent-contrast)}
+    .mini-btn.active{background:#60a5fa;color:#0b0e12}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <header>Kacheln anklicken → Sätze oben anzeigen</header>
-    <section class="output" id="output"></section>
-    <section class="grid" id="grid"></section>
+    <h3>Kacheln anklicken → Sätze oben anzeigen</h3>
+    <div class="output" id="output"></div>
+    <div class="grid" id="grid"></div>
   </div>
 
   <script>
@@ -112,57 +91,46 @@
       {id:"crash",label:"Crash",sentence:"Ich bin gerade in einem starken Crash."},
       {id:"nicht",label:"Nicht sprechen",sentence:"Bitte jetzt nicht mit mir sprechen."}
     ];
-
     const grid=document.getElementById("grid");
     const output=document.getElementById("output");
+    const state={};
+    tilesData.forEach(t=>state[t.id]={selected:false,importance:"normal"});
 
-    const state = {};
-    tilesData.forEach(t => state[t.id] = {selected:false,importance:"normal"});
-
-    // Kacheln erzeugen
+    // Kacheln bauen
     tilesData.forEach(t=>{
       const tile=document.createElement("div");
-      tile.className="tile";
-      tile.dataset.id=t.id;
+      tile.className="tile"; tile.dataset.id=t.id;
 
       const head=document.createElement("div");
-      head.className="tile-header";
-      head.textContent=t.label;
+      head.className="tile-header"; head.textContent=t.label;
       head.onclick=()=>{
         state[t.id].selected=!state[t.id].selected;
-        if(!state[t.id].selected){ state[t.id].importance="normal"; }
+        if(!state[t.id].selected) state[t.id].importance="normal";
         update();
       };
 
       const foot=document.createElement("div");
       foot.className="tile-footer";
-
       const btn1=document.createElement("button");
-      btn1.className="mini-btn";
-      btn1.textContent="Wichtig";
-      btn1.onclick=(e)=>{
+      btn1.className="mini-btn"; btn1.textContent="Wichtig";
+      btn1.onclick=e=>{
         e.stopPropagation();
         state[t.id].selected=true;
-        state[t.id].importance = (state[t.id].importance==="wichtig" ? "normal" : "wichtig");
+        state[t.id].importance=(state[t.id].importance==="wichtig"?"normal":"wichtig");
         update();
       };
-
       const btn2=document.createElement("button");
-      btn2.className="mini-btn";
-      btn2.textContent="Sehr wichtig";
-      btn2.onclick=(e)=>{
+      btn2.className="mini-btn"; btn2.textContent="Sehr wichtig";
+      btn2.onclick=e=>{
         e.stopPropagation();
         state[t.id].selected=true;
-        state[t.id].importance = (state[t.id].importance==="sehr" ? "normal" : "sehr");
+        state[t.id].importance=(state[t.id].importance==="sehr"?"normal":"sehr");
         update();
       };
 
-      foot.appendChild(btn1);
-      foot.appendChild(btn2);
-
-      tile.appendChild(head);
-      tile.appendChild(foot);
-      grid.appendChild(tile);
+      foot.append(btn1,btn2);
+      tile.append(head,foot);
+      grid.append(tile);
     });
 
     function update(){
@@ -170,27 +138,19 @@
       tilesData.forEach(t=>{
         const {selected,importance}=state[t.id];
         const tile=document.querySelector(`.tile[data-id="${t.id}"]`);
-        tile.classList.toggle("selected", selected);
-
+        tile.classList.toggle("selected",selected);
         const [btn1,btn2]=tile.querySelectorAll(".mini-btn");
-        btn1.classList.toggle("active", importance==="wichtig");
-        btn2.classList.toggle("active", importance==="sehr");
-
+        btn1.classList.toggle("active",importance==="wichtig");
+        btn2.classList.toggle("active",importance==="sehr");
         if(selected){
           const div=document.createElement("div");
-          if(importance==="wichtig"){
-            div.innerHTML="<b>"+t.sentence+"</b>";
-          } else if(importance==="sehr"){
-            div.innerHTML="<b><u>"+t.sentence+"</u></b>";
-          } else {
-            div.textContent=t.sentence;
-          }
+          if(importance==="wichtig") div.innerHTML="<b>"+t.sentence+"</b>";
+          else if(importance==="sehr") div.innerHTML="<b><u>"+t.sentence+"</u></b>";
+          else div.textContent=t.sentence;
           output.appendChild(div);
         }
       });
     }
-
-    // Initialer Aufruf, damit alles korrekt angezeigt wird
     update();
   </script>
 </body>

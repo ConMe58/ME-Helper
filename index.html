@@ -36,13 +36,13 @@
     .output div{margin:6px 0}
     .grid{
       display:grid;
-      grid-template-columns:repeat(3,1fr); /* immer 3 Spalten */
+      grid-template-columns:repeat(3,1fr);
       gap:14px;
       justify-items:stretch;
       align-items:stretch;
     }
     .tile{
-      aspect-ratio:1/1; /* quadratisch */
+      aspect-ratio:1/1;
       border:1px solid var(--border);
       border-radius:var(--radius);
       background:var(--card);
@@ -62,6 +62,7 @@
       display:flex;
       align-items:center;
       justify-content:center;
+      cursor:pointer;
     }
     .tile-footer{
       display:flex;
@@ -103,7 +104,6 @@
     const grid=document.getElementById("grid");
     const output=document.getElementById("output");
 
-    // Zustand: für jede Kachel ob aktiv + wie wichtig
     const state = {};
     tilesData.forEach(t => state[t.id] = {selected:false,importance:"normal"});
 
@@ -118,6 +118,7 @@
         head.textContent=t.label;
         head.onclick=()=>{
           state[t.id].selected=!state[t.id].selected;
+          if(!state[t.id].selected){ state[t.id].importance="normal"; }
           update();
         };
 
@@ -130,7 +131,7 @@
         btn1.onclick=(e)=>{
           e.stopPropagation();
           state[t.id].selected=true;
-          state[t.id].importance="wichtig";
+          state[t.id].importance = (state[t.id].importance==="wichtig" ? "normal" : "wichtig");
           update();
         };
 
@@ -140,7 +141,7 @@
         btn2.onclick=(e)=>{
           e.stopPropagation();
           state[t.id].selected=true;
-          state[t.id].importance="sehr";
+          state[t.id].importance = (state[t.id].importance==="sehr" ? "normal" : "sehr");
           update();
         };
 
@@ -169,7 +170,26 @@
           output.appendChild(div);
         }
       });
-      render();
+      // Buttons neu zeichnen
+      document.querySelectorAll(".mini-btn").forEach(btn=>{
+        btn.classList.remove("active");
+      });
+      tilesData.forEach(t=>{
+        const tile=document.querySelector(`.tile-header:contains('${t.label}')`);
+      });
+      // Komplettes Grid neu zeichnen
+      renderGridButtons();
+    }
+
+    // Hilfsfunktion: Buttons-States aktualisieren
+    function renderGridButtons(){
+      const tiles=document.querySelectorAll(".tile");
+      tiles.forEach((tile,idx)=>{
+        const id=tilesData[idx].id;
+        const [btn1,btn2]=tile.querySelectorAll(".mini-btn");
+        btn1.classList.toggle("active", state[id].importance==="wichtig");
+        btn2.classList.toggle("active", state[id].importance==="sehr");
+      });
     }
 
     render();

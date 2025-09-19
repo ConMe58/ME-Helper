@@ -32,6 +32,8 @@
       display:grid;
       grid-template-columns:repeat(3, 1fr);
       gap:12px;
+      max-width:650px;   /* Blockbreite */
+      margin:0 auto;     /* zentrieren */
     }
     .tile{
       aspect-ratio:1/1;
@@ -96,7 +98,6 @@
     const state={};
     tilesData.forEach(t=>state[t.id]={selected:false,importance:"normal"});
 
-    // Kacheln bauen
     tilesData.forEach(t=>{
       const tile=document.createElement("div");
       tile.className="tile"; tile.dataset.id=t.id;

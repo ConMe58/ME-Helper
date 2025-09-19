@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kachel-Auswahl</title>
+  <style>
+    :root{
+      --bg:#ffffff; --fg:#111; --muted:#666;
+      --card:#f3f4f6; --border:#e5e7eb;
+      --accent:#2563eb; --accent-contrast:#fff;
+      --selected:#dbeafe; --shadow:0 1px 2px rgba(0,0,0,.07),0 3px 6px rgba(0,0,0,.06);
+      --radius:14px;
+    }
+    @media(prefers-color-scheme:dark){
+      :root{
+        --bg:#0b0e12; --fg:#e8eaed; --muted:#98a2b3;
+        --card:#12161c; --border:#1f2733;
+        --accent:#60a5fa; --accent-contrast:#0b0e12;
+        --selected:#152133; --shadow:0 1px 2px rgba(0,0,0,.5),0 6px 14px rgba(0,0,0,.35);
+      }
+    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      background:var(--bg);color:var(--fg);display:flex;justify-content:center}
+    .wrap{width:min(1100px,94vw);margin:28px auto 80px}
+    header{margin-bottom:16px;font-weight:700;font-size:20px}
+    .output{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+      padding:14px;box-shadow:var(--shadow);margin-bottom:18px}
+    .output textarea{width:100%;min-height:72px;border:0;background:transparent;
+      color:var(--fg);font:inherit;resize:vertical}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    @media(max-width:920px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:560px){.grid{grid-template-columns:1fr}}
+    .tile{aspect-ratio:2/3;border:1px solid var(--border);border-radius:var(--radius);
+      background:var(--card);box-shadow:var(--shadow);cursor:pointer;
+      display:flex;align-items:center;justify-content:center;text-align:center;
+      padding:0;transition:transform .08s ease}
+    .tile:hover{transform:translateY(-2px)}
+    .tile.selected{background:var(--selected);
+      border-color:color-mix(in oklab,var(--accent) 40%,var(--border))}
+    .label{font-weight:700;font-size:16px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>Kacheln anklicken → Sätze oben anzeigen</header>
+    <section class="output">
+      <textarea id="output" placeholder="Ausgewählte Sätze erscheinen hier …" readonly></textarea>
+    </section>
+    <section class="grid" id="grid"></section>
+  </div>
+
+  <script>
+    const tilesData = [
+      {id:"pause",label:"Pause",sentence:"Gerade ist es zu viel, ich brauche eine Pause."},
+      {id:"trinken",label:"Trinken",sentence:"Ich habe Durst und muss was trinken."},
+      {id:"wc",label:"WC",sentence:"Ich muss auf Toilette."},
+      {id:"medikamente",label:"Medikamente",sentence:"Ich brauche meine Medikamente."},
+      {id:"lueften",label:"Lüften",sentence:"Bitte kurz durchlüften."},
+      {id:"zaehne",label:"Zähneputzen",sentence:"Ich will Zähne putzen."},
+      {id:"schmerzen",label:"Schmerzen",sentence:"Ich habe gerade starke Schmerzen."},
+      {id:"crash",label:"Crash",sentence:"Ich bin gerade in einem starken Crash."},
+      {id:"nicht",label:"Nicht sprechen",sentence:"Bitte jetzt nicht mit mir sprechen."}
+    ];
+
+    const grid=document.getElementById("grid");
+    const output=document.getElementById("output");
+    let selected=[];
+
+    function render(){
+      grid.innerHTML="";
+      tilesData.forEach(t=>{
+        const btn=document.createElement("button");
+        btn.className="tile"+(selected.includes(t.id)?" selected":"");
+        btn.innerHTML=`<div class="label">${t.label}</div>`;
+        btn.onclick=()=>{
+          if(selected.includes(t.id)){selected=selected.filter(x=>x!==t.id);}
+          else{selected.push(t.id);}
+          render();update();
+        };
+        grid.appendChild(btn);
+      });
+    }
+    function update(){
+      output.value=selected.map(id=>tilesData.find(t=>t.id===id).sentence).join(" ");
+    }
+    render();
+  </script>
+</body>
+</html>
